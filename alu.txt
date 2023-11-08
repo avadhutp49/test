@@ -1,0 +1,67 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity ALU_4bit is
+    Port (
+        a, b : in STD_LOGIC_VECTOR(3 downto 0);
+        sel : in STD_LOGIC_VECTOR(2 downto 0);
+        y : out STD_LOGIC_VECTOR(3 downto 0)
+    );
+end ALU_4bit;
+
+architecture Behavioral of ALU_4bit is
+begin
+    process(a, b, sel)
+    begin
+        case sel is
+            when "000" => y <= a + b;
+            when "001" => y <= a - b;
+            when "010" => y <= a AND b;
+            when "011" => y <= not(a AND b);
+            when "100" => y <= a OR b;
+            when "101" => y <= a XOR b;
+            when "110" => y <= not(a XOR b);
+            when others => y <= null;
+        end case;
+    end process;
+end Behavioral;
+
+
+
+
+
+
+
+
+
+
+
+stimulus: process
+    begin
+        a_tb <= "0010"; -- Example input A
+        b_tb <= "0001"; -- Example input B
+
+        sel_tb <= "000"; -- Addition
+        wait for 10 ns;
+
+        sel_tb <= "001"; -- Subtraction
+        wait for 10 ns;
+
+        sel_tb <= "010"; -- AND
+        wait for 10 ns;
+
+        sel_tb <= "011"; -- NAND
+        wait for 10 ns;
+
+        sel_tb <= "100"; -- OR
+        wait for 10 ns;
+
+        sel_tb <= "101"; -- XOR
+        wait for 10 ns;
+
+        sel_tb <= "110"; -- XNOR
+        wait for 10 ns;
+
+        wait;
+    end process stimulus;
+

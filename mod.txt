@@ -1,0 +1,79 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_unsigned.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity modNex is
+    Port ( 
+        clk : in STD_LOGIC;
+        clr : in STD_LOGIC;
+        q : inout STD_LOGIC_VECTOR(2 downto 0)
+    );
+end modNex;
+
+architecture Behavioral of modNex is
+    signal count: std_logic_vector(2 downto 0);
+begin
+    process(clk)
+    begin
+        if (clr = '1') then 
+            count <= "000";
+        elsif (rising_edge(clk)) then
+            if (count = "100") then
+                count <= "000";
+            else
+                count <= count + 1;
+            end if;
+        end if;
+    end process;
+    q <= count;
+end Behavioral;
+
+
+
+
+#############################################
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity tb_modNex is
+end tb_modNex;
+
+architecture Behavioral of tb_modNex is
+    signal clk_tb, clr_tb : std_logic := '0';
+    signal q_tb : std_logic_vector(2 downto 0);
+
+    component modNex is
+        Port (
+            clk : in STD_LOGIC;
+            clr : in STD_LOGIC;
+            q : inout STD_LOGIC_VECTOR(2 downto 0)
+        );
+    end component;
+
+begin
+    uut: modNex port map (clk_tb, clr_tb, q_tb);
+
+    clk_process: process
+    begin
+        while now < 100 ns loop
+            clk_tb <= '0';
+            wait for 10 ns;
+            clk_tb <= '1';
+            wait for 10 ns;
+        end loop;
+        wait;
+    end process;
+
+    stimulus_process: process
+    begin
+        clr_tb <= '1'; -- Asserting clear
+        wait for 20 ns;
+        clr_tb <= '0'; -- Deasserting clear
+        wait for 80 ns; -- Wait for the counter to cycle through 5 clock cycles
+        assert q_tb = "100" report "Test failed for Mod-5 counter" severity error;
+        wait;
+    end process;
+
+end Behavioral;

@@ -1,0 +1,75 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity Half_Adder is
+    Port (
+        a, b : in STD_LOGIC;
+        sum, carry : out STD_LOGIC
+    );
+end Half_Adder;
+
+architecture Behavioral of Half_Adder is
+begin
+    sum <= a XOR b;
+    carry <= a AND b;
+end Behavioral;
+
+
+
+
+
+
+entity Full_Adder is
+    Port (
+        x, y, z : in STD_LOGIC;
+        s, c : out STD_LOGIC
+    );
+end Full_Adder;
+
+architecture Behavioral of Full_Adder is
+    signal c1, c2, s1, s2 : std_logic;
+    component Half_Adder
+        Port (
+            a, b : in STD_LOGIC;
+            sum, carry : out STD_LOGIC
+        );
+    end component;
+begin
+    HA1: Half_Adder port map(x, y, s1, c1);
+    HA2: Half_Adder port map(s1, z, s, c2);
+    c <= c1 OR c2;
+end Behavioral;
+
+
+
+
+
+
+stimulus_proc: process
+    begin
+        x_tb <= '0'; y_tb <= '0'; z_tb <= '0'; 
+        wait for 10 ns;
+        
+        x_tb <= '0'; y_tb <= '0'; z_tb <= '1'; 
+        wait for 10 ns;
+        
+        x_tb <= '0'; y_tb <= '1'; z_tb <= '0'; 
+        wait for 10 ns;
+        
+        x_tb <= '0'; y_tb <= '1'; z_tb <= '1'; 
+        wait for 10 ns;
+        
+        x_tb <= '1'; y_tb <= '0'; z_tb <= '0'; 
+        wait for 10 ns;
+        
+        x_tb <= '1'; y_tb <= '0'; z_tb <= '1'; 
+        wait for 10 ns;
+        
+        x_tb <= '1'; y_tb <= '1'; z_tb <= '0'; 
+        wait for 10 ns;
+        
+        x_tb <= '1'; y_tb <= '1'; z_tb <= '1'; 
+        wait for 10 ns;
+        
+        wait;
+    end process stimulus_proc;

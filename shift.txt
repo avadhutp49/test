@@ -1,0 +1,137 @@
+entity shiftreg is
+    Port (
+        si, clk : in STD_LOGIC;
+        so : out STD_LOGIC;
+        pin : in STD_LOGIC_VECTOR (3 downto 0);
+        po : out STD_LOGIC_VECTOR (3 downto 0);
+        sel : in STD_LOGIC_VECTOR (1 downto 0)
+    );
+end shiftreg;
+
+architecture Behavioral of shiftreg is
+    signal temp : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
+begin
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            case sel is
+                when "00" => -- SISO
+                    temp <= si & temp(3 downto 1);
+                    so <= temp(3);
+                when "01" => -- SIPO
+                    temp <= pin;
+                    po <= temp;
+                when "10" => -- PISO
+                    temp <= si & temp(3 downto 1);
+                    so <= temp(3);
+                when "11" => -- PIPO
+                    po <= pin;
+                when others =>
+                    null;
+            end case;
+        end if;
+    end process;
+end Behavioral;
+
+
+
+
+
+
+
+
+######################
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity tb_shiftreg is
+end tb_shiftreg;
+
+architecture Behavioral of tb_shiftreg is
+    component shiftreg is
+        Port (
+            si, clk : in STD_LOGIC;
+            so : out STD_LOGIC;
+            pin : in STD_LOGIC_VECTOR (3 downto 0);
+            po : out STD_LOGIC_VECTOR (3 downto 0);
+            sel : in STD_LOGIC_VECTOR (1 downto 0)
+        );
+    end component;
+
+    signal si_tb, clk_tb : STD_LOGIC := '0';
+    signal so_tb : STD_LOGIC;
+    signal pin_tb, po_tb : STD_LOGIC_VECTOR (3 downto 0) := "0000";
+    signal sel_tb : STD_LOGIC_VECTOR (1 downto 0) := "00";
+
+begin
+    uut: shiftreg port map (si_tb, clk_tb, so_tb, pin_tb, po_tb, sel_tb);
+
+    clk_tb_process: process
+    begin
+        clk_tb <= '0';
+        wait for 5 ns;
+        clk_tb <= '1';
+        wait for 5 ns;
+    end process;
+
+    stimulus_process: process
+    begin
+        si_tb <= '0';
+        pin_tb <= "1010";
+        sel_tb <= "00"; -- SISO
+        wait for 10 ns;
+
+        si_tb <= '1';
+        wait for 10 ns;
+
+        si_tb <= '0';
+        pin_tb <= "0101";
+        sel_tb <= "01"; -- SIPO
+        wait for 10 ns;
+
+        si_tb <= '1';
+        wait for 10 ns;
+
+        si_tb <= '0';
+        pin_tb <= "1100";
+        sel_tb <= "10"; -- PISO
+        wait for 10 ns;
+
+        si_tb <= '1';
+        wait for 10 ns;
+
+        pin_tb <= "1111";
+        sel_tb <= "11"; -- PIPO
+        wait for 10 ns;
+
+        wait;
+    end process;
+
+end Behavioral;
+
+
+
+
+
+
+
+
+##########################
+
+UCF FILE (SHIFT REGISTER)
+NET clk LOC = P183;
+NET Reset LOC = P102;
+NET md(0) LOC = P101;
+NET md(1) LOC = P100;
+NET si LOC = P97;
+NET so LOC = P156;
+NET pi(0) LOC = P87;
+NET pi(1) LOC = P86;
+NET pi(2) LOC = P85;
+NET pi(3) LOC = P81;
+NET po(0) LOC = P162;
+NET po(1) LOC = P165;
+NET po(2) LOC = P166;
+NET po(3) LOC = P167;

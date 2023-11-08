@@ -1,0 +1,214 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity lcdtest is 
+    Port ( 
+        rst, clk : in STD_LOGIC;
+        lcd_RS : out STD_LOGIC;
+        lcd_EN : out STD_LOGIC;
+        data_out : out STD_LOGIC_VECTOR (7 downto 0)
+    );
+end lcdtest;
+
+architecture Behavioral of lcdtest is
+    signal div_count : std_logic_vector(20 downto 0); 
+    signal clk_new : std_logic;
+
+    type state is (reset,fuction,mode,cur,clear,d0,d1,d2,fuction1,mode1,cur1,clear1,d01,d11,d21);
+    signal pss, nx : state;
+
+begin
+
+    clk_DIV: process(clk, rst)
+    begin
+        if rst = '1' then
+            div_count <= (others => '0');
+        elsif rising_edge(clk) then
+            div_count <= div_count + '1';
+        end if;
+    end process clk_DIV;
+
+    clk_new <= div_count(20);
+
+    p_state_transactin: process (clk_new, rst)
+    begin
+        if rst = '1' then
+            pss <= reset;
+        elsif rising_edge(clk_new) then
+            pss <= nx;
+        end if;
+    end process p_state_transactin;
+
+    LCD_working: process(pss)
+    begin
+        case pss is
+            when reset =>
+                lcd_RS <= '0';
+                lcd_EN <= '1';
+                nx <= fuction;
+                data_out <= "00111100"; --3Ch
+                
+            when fuction =>
+                lcd_RS <= '0';
+                lcd_EN <= '1';
+                data_out <= "00111100"; --3Ch
+                nx <= fuction;
+                
+            when fuction1 =>
+                lcd_RS <= '0';
+                lcd_EN <= '0';
+                data_out <= "00111100"; --3Ch
+                nx <= mode;
+                
+            when mode =>
+                lcd_RS <= '0';
+                lcd_EN <= '1';
+                data_out <= "00000110"; --06h
+                nx <= mode1;
+                
+            when mode1 =>
+                lcd_RS <= '0';
+                lcd_EN <= '0';
+                data_out <= "00000110"; --06h
+                nx <= cur;
+                
+            when cur =>
+                lcd_RS <= '0';
+                lcd_EN <= '1';
+                data_out <= "00001100"; --0Ch
+                nx <= cur1;
+                
+            when cur1 =>
+                lcd_RS <= '0';
+                lcd_EN <= '0';
+                data_out <= "00001100"; --0Ch
+                nx <= clear;
+                
+            when clear =>
+                lcd_RS <= '0';
+                lcd_EN <= '1';
+                data_out <= "00000001"; --01h
+                nx <= clear1;
+                
+            when clear1 =>
+                lcd_RS <= '0';
+                lcd_EN <= '0';
+                data_out <= "00000001"; --01h
+                nx <= d0;
+                
+            when d0 =>
+                lcd_RS <= '1';
+                lcd_EN <= '1';
+                data_out <= "01010011"; --S
+                nx <= d01;
+                
+            when d01 =>
+                lcd_RS <= '1';
+                lcd_EN <= '0';
+                data_out <= "01010011"; --S 
+                nx <= d1;
+                
+            when d1 =>
+                lcd_RS <= '1';
+                lcd_EN <= '1';
+                data_out <= "01001011"; --K
+                nx <= d11;
+                
+            when d11 =>
+                lcd_RS <= '1';
+                lcd_EN <= '0';
+                data_out <= "01001011"; --K
+                nx <= d2;
+                
+            when d2 =>
+                lcd_RS <= '1';
+                lcd_EN <= '1';
+                data_out <= "01001110"; --N 
+                nx <= d21;
+                
+            when d21 =>
+                lcd_RS <= '1';
+                lcd_EN <= '0';
+                data_out <= "01001110"; --N
+                nx <= d21;
+                
+            when others =>
+                null;
+                
+        end case;
+    end process LCD_working;
+
+end Behavioral;
+
+
+
+
+
+######################################
+
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity tb_lcdtest is
+end tb_lcdtest;
+
+architecture Behavioral of tb_lcdtest is
+    signal rst_tb, clk_tb : std_logic := '0';
+    signal lcd_RS_tb, lcd_EN_tb : std_logic;
+    signal data_out_tb : std_logic_vector(7 downto 0);
+
+    component lcdtest is
+        Port (
+            rst, clk : in STD_LOGIC;
+            lcd_RS : out STD_LOGIC;
+            lcd_EN : out STD_LOGIC;
+            data_out : out STD_LOGIC_VECTOR(7 downto 0)
+        );
+    end component;
+
+begin
+    uut: lcdtest port map (rst_tb, clk_tb, lcd_RS_tb, lcd_EN_tb, data_out_tb);
+
+    clk_process: process
+    begin
+        while now < 100 ns loop
+            clk_tb <= '0';
+            wait for 10 ns;
+            clk_tb <= '1';
+            wait for 10 ns;
+        end loop;
+        wait;
+    end process;
+
+    stimulus_process: process
+    begin
+        rst_tb <= '1'; -- Asserting reset
+        wait for 20 ns;
+        rst_tb <= '0'; -- Deasserting reset
+        wait for 80 ns; -- Wait for the counter to cycle through 8 clock cycles
+        assert data_out_tb = "01001110" report "Test failed for lcdtest" severity error;
+        wait;
+    end process;
+
+end Behavioral;
+ 
+ 
+ 
+ 
+ 
+ #########################
+ 
+ 
+ UCF FILE (LCD)
+NET data(0) LOC = P62;
+NET data(1) LOC = P63;
+NET data(2) LOC = P64;
+NET data(3) LOC = P65;
+NET data(4) LOC = P67;
+NET data(5) LOC = P68;
+NET data(6) LOC = P71;
+NET data(0) LOC = P72;
+NET clk LOC = P183;
+NET reset LOC = P102;
